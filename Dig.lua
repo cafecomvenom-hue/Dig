@@ -1,39 +1,221 @@
 --[[
-	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+    OP SCRIPT - SHOVEL A BRAINROT (MOBILE VERSION)
+    Otimizado para Android: Tamanho Reduzido + Scroll
 ]]
--- Op script Shovel a Brainrot GUI
+
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
  
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
  
--- Create GUI
+-- Criar GUI Principal
 local OpScript = Instance.new("ScreenGui")
-OpScript.Name = "OpScriptShovelBrainrot"
-OpScript.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+OpScript.Name = "OpScriptMobile"
 OpScript.ResetOnSpawn = false
- 
--- Main Frame
+OpScript.Parent = playerGui
+
+-- --- BOTÃO FLUTUANTE (ABRIR/FECHAR) ---
+local FloatingButton = Instance.new("TextButton")
+FloatingButton.Size = UDim2.new(0, 55, 0, 55)
+FloatingButton.Position = UDim2.new(0, 10, 0.5, -27)
+FloatingButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+FloatingButton.Text = "OP"
+FloatingButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+FloatingButton.Font = Enum.Font.GothamBold
+FloatingButton.TextSize = 18
+FloatingButton.Draggable = true 
+FloatingButton.Parent = OpScript
+
+local FloatingCorner = Instance.new("UICorner")
+FloatingCorner.CornerRadius = UDim.new(1, 0)
+FloatingCorner.Parent = FloatingButton
+
+local FloatingStroke = Instance.new("UIStroke")
+FloatingStroke.Thickness = 2
+FloatingStroke.Color = Color3.fromRGB(255, 255, 255)
+FloatingStroke.Parent = FloatingButton
+
+-- --- JANELA PRINCIPAL (COMPACTA PARA MOBILE) ---
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 500, 0, 500)
-MainFrame.Position = UDim2.new(0.5, -250, 0.5, -250)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-MainFrame.BorderSizePixel = 0
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 320, 0, 280) -- Tamanho ideal para Android
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -140)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+MainFrame.Visible = false
 MainFrame.ClipsDescendants = true
- 
--- Shadow Effect
-local Shadow = Instance.new("ImageLabel")
-Shadow.Name = "Shadow"
-Shadow.Size = UDim2.new(1, 20, 1, 20)
-Shadow.Position = UDim2.new(0, -10, 0, -10)
-Shadow.BackgroundTransparency = 1
-Shadow.Image = "rbxassetid://1316045217"
-Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-Shadow.ImageTransparency = 0.8
-Shadow.ScaleType = Enum.ScaleType.Slice
+MainFrame.Parent = OpScript
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
+
+-- Cabeçalho (Header)
+local Header = Instance.new("Frame")
+Header.Size = UDim2.new(1, 0, 0, 35)
+Header.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+Header.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -40, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "⚡ Shovel Brainrot OP"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.TextXAlignment = "Left"
+Title.Parent = Header
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 25, 0, 25)
+CloseButton.Position = UDim2.new(1, -30, 0.5, -12)
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Parent = Header
+Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(0, 6)
+
+-- --- ÁREA DE SCROLL (PARA CABER TUDO) ---
+local ScrollFrame = Instance.new("ScrollingFrame")
+ScrollFrame.Size = UDim2.new(1, -10, 1, -45)
+ScrollFrame.Position = UDim2.new(0, 5, 0, 40)
+ScrollFrame.BackgroundTransparency = 1
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 2, 0) -- Aumenta conforme adicionas mais botões
+ScrollFrame.ScrollBarThickness = 3
+ScrollFrame.Parent = MainFrame
+
+local Layout = Instance.new("UIListLayout")
+Layout.Padding = UDim.new(0, 6)
+Layout.HorizontalAlignment = "Center"
+Layout.Parent = ScrollFrame
+
+-- --- FUNÇÃO PARA CRIAR BOTÕES DE TOGGLE ---
+local function addFeature(name, callback)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 290, 0, 40)
+    frame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+    frame.Parent = ScrollFrame
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 6)
+
+    local label = Instance.new("TextLabel")
+    label.Text = name
+    label.Size = UDim2.new(0.6, 0, 1, 0)
+    label.Position = UDim2.new(0, 10, 0, 0)
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.BackgroundTransparency = 1
+    label.TextXAlignment = "Left"
+    label.Font = "GothamBold"
+    label.TextSize = 12
+    label.Parent = frame
+
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 45, 0, 22)
+    btn.Position = UDim2.new(1, -55, 0.5, -11)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
+    btn.Text = ""
+    btn.Parent = frame
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(1, 0)
+    
+    local knob = Instance.new("Frame")
+    knob.Size = UDim2.new(0, 18, 0, 18)
+    knob.Position = UDim2.new(0, 2, 0, 2)
+    knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    knob.Parent = btn
+    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+
+    local active = false
+    btn.MouseButton1Click:Connect(function()
+        active = not active
+        btn.BackgroundColor3 = active and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(60, 60, 65)
+        TweenService:Create(knob, TweenInfo.new(0.2), {Position = active and UDim2.new(1, -20, 0, 2) or UDim2.new(0, 2, 0, 2)}):Play()
+        callback(active)
+    end)
+end
+
+-- --- LÓGICA DAS FUNÇÕES ---
+
+-- 1. Dinheiro Infinito
+addFeature("Inf Money 💰", function(state)
+    _G.InfMoney = state
+    task.spawn(function()
+        while _G.InfMoney do
+            pcall(function()
+                ReplicatedStorage.Remotes.PlayerData.UpdateState:FireServer({currency = "Money", action = "UpdateCurrency", amount = 1e18})
+            end)
+            task.wait(0.5)
+        end
+    end)
+end)
+
+-- 2. Velocidade (Speed)
+addFeature("Speed Hack (60) 🏃", function(state)
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.WalkSpeed = state and 60 or 16
+    end
+end)
+
+-- 3. Pulo Infinito
+addFeature("Inf Jump 🦘", function(state)
+    _G.InfJump = state
+    UserInputService.JumpRequest:Connect(function()
+        if _G.InfJump and player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid:ChangeState("Jumping")
+        end
+    end)
+end)
+
+-- 4. Auto Upgrades (Skills)
+local skills = {"MiningStrength", "MiningSpeed", "MiningFortune", "InventorySlots"}
+for _, skill in pairs(skills) do
+    addFeature("Auto " .. skill, function(state)
+        _G[skill] = state
+        task.spawn(function()
+            while _G[skill] do
+                pcall(function()
+                    ReplicatedStorage.Remotes.ApplySkillPoint:FireServer(skill)
+                end)
+                task.wait(0.3)
+            end
+        end)
+    end)
+end
+
+-- --- CONTROLES DE INTERFACE ---
+
+FloatingButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+end)
+
+-- Arrastar Menu no Mobile
+local dragStart, startPos
+Header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragStart and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragStart = nil
+    end
+end)
+
+print("Script Mobile Carregado!")
 Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
 Shadow.Parent = MainFrame
  
